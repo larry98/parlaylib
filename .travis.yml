@@ -77,7 +77,8 @@ jobs:
       - wget --quiet https://github.com/danmar/cppcheck/archive/2.1.tar.gz
       - tar -xf 2.1.tar.gz
       - mkdir cppcheck-2.1/build && pushd cppcheck-2.1/build
-      - CC=clang-10 CXX=clang++-10 $CMAKE .. && make && make install && popd
+      - CC=clang-10 CXX=clang++-10 $CMAKE .. -DCMAKE_BUILD_TYPE=Release
+      - make && sudo make install && popd
 
       # Run the analysis
       - mkdir build
