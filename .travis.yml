@@ -4,8 +4,9 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
+  - sanitize
+  - test
   - analysis
-  - build
 
 addons:
   apt:
@@ -20,6 +21,8 @@ addons:
     - clang-10
     - libomp-10-dev
     - libtbb-dev
+    - libc++1-10
+    - libc++abi1-10
 
 before_script:
   # Install the latest CMake
@@ -55,6 +58,16 @@ jobs:
       - make
       - make check
       
+    # Test that the project builds and tests successfully with Clang using libc++
+    - stage: test
+      name: check-clang-libcxx
+      script:
+      - mkdir build
+      - cd build
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DUSE_LIBCXX=On -DPARLAY_TEST_OMP=On -DPARLAY_TEST_TBB=On -DPARLAY_BENCHMARK=On ..
+      - make
+      - make check
+      
     # Test that the project builds and tests successfully with GCC 7 (with Cilk support)
     - stage: test
       name: check-gcc-cilk
@@ -84,7 +97,7 @@ jobs:
       # Run the analysis
       - mkdir build
       - cd build
-      - CC=clang CXX=clang++ $CMAKE -DCPPCHECK=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCPPCHECK=On ..
       - make cppcheck-all
       
     # Run clang-tidy on the codebase
@@ -98,7 +111,7 @@ jobs:
       # Run the analysis
       - mkdir build
       - cd build
-      - CC=clang CXX=clang++ $CMAKE -DCLANG_TIDY=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCLANG_TIDY=On ..
       - make clang-tidy-all
 
     # Run include-what-you-use on the codebase
@@ -119,11 +132,18 @@ jobs:
       # Run the analysis
       - mkdir build
       - cd build
-      - CC=clang CXX=clang++ $CMAKE -DIWYU=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DIWYU=On ..
       - make iwyu-all
 
     # -------------------------------------------------------------------------
     #                              SANITIZE STAGE
     # -------------------------------------------------------------------------
 
-    
+    - stage: sanitize
+      name: check-asan
+      script:
+      - mkdir build
+      - cd build
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DBUILD_TESTS=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
+      - make
+      - make check-asan
