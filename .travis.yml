@@ -174,7 +174,7 @@ jobs:
       - tar -xf llvm-10.0.1.src.tar.xz
       - tar -xf libcxx-10.0.1.src.tar.xz
       - tar -xf libcxxabi-10.0.1.src.tar.xz
-      - mkdir build/libcxx-10.0.1.src && pushd build/libcxx-10.0.1.src
+      - mkdir libcxx-10.0.1.src/build && pushd libcxx-10.0.1.src/build
       - $CMAKE -DLLVM_PATH=../../llvm-10.0.1.src -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi-10.0.1.src/include -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLLVM_USE_SANITIZER=MemoryWithOrigins -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10 ..
       - popd && popd
 
