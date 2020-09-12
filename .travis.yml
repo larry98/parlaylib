@@ -83,6 +83,19 @@ jobs:
       # Run the analysis
       - mkdir build
       - cd build
-      - $CMAKE -DCPPCHECK=On ..
+      - CC=clang CXX=clang++ $CMAKE -DCPPCHECK=On ..
       - make cppcheck-all
-    
+      
+    # Run clang-tidy on the codebase
+    - stage: analysis
+      name: clang-tidy
+      script:
+      # Install clang-tidy
+      - sudo apt-get -qq install clang-tidy-10
+      - sudo ln -s /usr/bin/clang-tidy-10 /usr/bin/clang-tidy
+
+      # Run the analysis
+      - mkdir build
+      - cd build
+      - CC=clang CXX=clang++ $CMAKE -DCLANG_TIDY=On ..
+      - make clang-tidy-all
