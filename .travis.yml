@@ -4,6 +4,7 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
+  - analysis
   - build
 
 addons:
@@ -29,6 +30,11 @@ before_script:
   
 jobs:
   include:
+  
+    # -------------------------------------------------------------------------
+    #                                TEST STAGE
+    # -------------------------------------------------------------------------
+  
     # Test that the project builds and tests successfully with GCC
     - stage: test
       name: check-gcc
@@ -58,3 +64,24 @@ jobs:
       - CC=gcc-7 CXX=g++-7 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
       - make -j
       - make check
+
+    # -------------------------------------------------------------------------
+    #                            ANALYSIS STAGE
+    # -------------------------------------------------------------------------
+    
+    # Run CppCheck on the codebase
+    - stage: analysis
+      name: cppcheck
+      script:
+      # Download, build, and install cppcheck
+      - wget --quiet https://github.com/danmar/cppcheck/archive/2.1.tar.gz
+      - tar -xf 2.1.tar.gz
+      - mkdir cppcheck-2.1/build && pushd cppcheck-2.1/build
+      - $CMAKE .. && make -j && make install && popd
+
+      # Run the analysis
+      - mkdir build
+      - cd build
+      - cmake -DCPPCHECK=On ..
+      - make cppcheck-all
+    
