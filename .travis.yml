@@ -142,6 +142,7 @@ jobs:
     #                              SANITIZE STAGE
     # -------------------------------------------------------------------------
 
+    # Run the tests with AddressSanitizer instrumentation
     - stage: sanitize
       name: check-asan
       script:
@@ -150,3 +151,36 @@ jobs:
       - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
       - make
       - make check-asan
+      
+    # Run the tests with UndefinedBehaviorSanitizer instrumentation  
+    - stage: sanitize
+      name: check-ubsan
+      script:
+      - mkdir build
+      - cd build
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_UBSAN=On -DUSE_LIBCXX=On ..
+      - make
+      - make check-ubsan
+      
+    # Run the tests with MemorySanitizer instrumentation
+    - stage: sanitize
+      name: check-msan
+      script:
+      # Build libc++ with MSAN instrumentation
+      - mkdir llvm && pushd llvm
+      - wget --quiet https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/llvm-10.0.1.src.tar.xz
+      - wget --quiet https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/libcxx-10.0.1.src.tar.xz
+      - wget --quiet https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.1/libcxxabi-10.0.1.src.tar.xz
+      - tar -xf llvm-10.0.1.src.tar.xz
+      - tar -xf libcxx-10.0.1.src.tar.xz
+      - tar -xf libcxxabi-10.0.1.src.tar.xz
+      - mkdir build/libcxx-10.0.1.src && pushd build/libcxx-10.0.1.src
+      - $CMAKE -DLLVM_PATH=../../llvm-10.0.1.src -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi-10.0.1.src/include -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLLVM_USE_SANITIZER=MemoryWithOrigins -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10 ..
+      - popd && popd
+
+      # Run the build
+      - mkdir build
+      - cd build
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DBUILD_TESTS=On -DBUILD_MSAN=On -DLIBCXX_MSAN_PATH=../llvm/libcxx-10.0.1.src/build/lib ..
+      - make
+      - make check-msan
