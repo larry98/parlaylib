@@ -1,3 +1,4 @@
+os: linux
 dist: bionic
 language: cpp
 
@@ -25,8 +26,8 @@ jobs:
   include:
     # Test that the project builds successfully with GCC
     - stage: build
-    - name: build-gcc
-    - script:
+      name: build-gcc
+      script:
       - mkdir build
       - cd build
       - CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
@@ -34,8 +35,8 @@ jobs:
       
     # Test that the project builds successfully with Clang
     - stage: build
-    - name: build-clang
-    - script:
+      name: build-clang
+      script:
       - mkdir build
       - cd build
       - CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
