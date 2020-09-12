@@ -106,7 +106,7 @@ jobs:
       name: include-what-you-use
       script:
       # Install clang and llvm development files
-      - apt-get -qq install clang-10 libc++1-10 libc++-10-dev libc++abi1-10 libc++abi-10-dev llvm-10-dev libclang-10-dev
+      - sudo apt-get -qq install clang-10 libc++1-10 libc++-10-dev libc++abi1-10 libc++abi-10-dev llvm-10-dev libclang-10-dev
 
       # Download, build, and install IWYU
       - git clone https://github.com/include-what-you-use/include-what-you-use.git
@@ -122,3 +122,8 @@ jobs:
       - CC=clang CXX=clang++ $CMAKE -DIWYU=On ..
       - make iwyu-all
 
+    # -------------------------------------------------------------------------
+    #                              SANITIZE STAGE
+    # -------------------------------------------------------------------------
+
+    
