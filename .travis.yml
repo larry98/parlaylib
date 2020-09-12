@@ -1,0 +1,42 @@
+dist: bionic
+language: cpp
+
+stages:
+  - build
+
+addons:
+  apt:
+    update: true
+    sources:
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
+    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+      key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+    packages:
+    - g++-9
+    - clang-10
+
+before_script:
+  # Install the latest CMake
+  - wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+  - tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
+  - export PATH=$PATH:$PWD/cmake-3.18.2-Linux-x86_64/bin/
+  
+jobs:
+  include:
+    # Test that the project builds successfully with GCC
+    - stage: build
+    - name: build-gcc
+    - script:
+      - mkdir build
+      - cd build
+      - CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
+      - make -j
+      
+    # Test that the project builds successfully with Clang
+    - stage: build
+    - name: build-clang
+    - script:
+      - mkdir build
+      - cd build
+      - CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
+      - make -j
