@@ -42,7 +42,7 @@ jobs:
       - mkdir build
       - cd build
       - CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_OMP=On -DPARLAY_TEST_TBB=On -DPARLAY_BENCHMARK=On ..
-      - make -j
+      - make
       - make check
       
     # Test that the project builds and tests successfully with Clang
@@ -52,7 +52,7 @@ jobs:
       - mkdir build
       - cd build
       - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_OMP=On -DPARLAY_TEST_TBB=On -DPARLAY_BENCHMARK=On ..
-      - make -j
+      - make
       - make check
       
     # Test that the project builds and tests successfully with GCC 7 (with Cilk support)
@@ -62,7 +62,7 @@ jobs:
       - mkdir build
       - cd build
       - CC=gcc-7 CXX=g++-7 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
-      - make -j
+      - make
       - make check
 
     # -------------------------------------------------------------------------
@@ -77,7 +77,7 @@ jobs:
       - wget --quiet https://github.com/danmar/cppcheck/archive/2.1.tar.gz
       - tar -xf 2.1.tar.gz
       - mkdir cppcheck-2.1/build && pushd cppcheck-2.1/build
-      - $CMAKE .. && make -j && make install && popd
+      - CC=clang-10 CXX=clang++-10 $CMAKE .. && make && make install && popd
 
       # Run the analysis
       - mkdir build
