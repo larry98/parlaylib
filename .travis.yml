@@ -1,6 +1,7 @@
 os: linux
 dist: bionic
 language: cpp
+env: PARLAY_NUM_THREADS=8
 
 stages:
   - build
@@ -13,8 +14,11 @@ addons:
     - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
       key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
     packages:
+    - g++-7
     - g++-9
     - clang-10
+    - libomp-10-dev
+    - libtbb-dev
 
 before_script:
   # Install the latest CMake
@@ -31,7 +35,7 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
+      - CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_OMP=On -DPARLAY_TEST_TBB=On -DPARLAY_BENCHMARK=On ..
       - make -j
       - make check
       
@@ -41,6 +45,16 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_OMP=On -DPARLAY_TEST_TBB=On -DPARLAY_BENCHMARK=On ..
+      - make -j
+      - make check
+      
+    # Test that the project builds and tests successfully with GCC 7 (with Cilk support)
+    - stage: test
+      name: check-gcc-cilk
+      script:
+      - mkdir build
+      - cd build
+      - CC=gcc-7 CXX=g++-7 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
       - make -j
       - make check
