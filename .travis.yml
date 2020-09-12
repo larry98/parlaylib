@@ -25,20 +25,22 @@ before_script:
   
 jobs:
   include:
-    # Test that the project builds successfully with GCC
-    - stage: build
-      name: build-gcc
+    # Test that the project builds and tests successfully with GCC
+    - stage: test
+      name: check-gcc
       script:
       - mkdir build
       - cd build
       - CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
       - make -j
+      - make check
       
-    # Test that the project builds successfully with Clang
-    - stage: build
-      name: build-clang
+    # Test that the project builds and tests successfully with Clang
+    - stage: test
+      name: check-clang
       script:
       - mkdir build
       - cd build
       - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TESTS=On -DPARLAY_BENCHMARK=On ..
       - make -j
+      - make check
