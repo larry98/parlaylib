@@ -83,6 +83,6 @@ jobs:
       # Run the analysis
       - mkdir build
       - cd build
-      - cmake -DCPPCHECK=On ..
+      - $CMAKE -DCPPCHECK=On ..
       - make cppcheck-all
     
