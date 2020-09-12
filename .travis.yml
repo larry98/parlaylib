@@ -176,11 +176,12 @@ jobs:
       - tar -xf libcxxabi-10.0.1.src.tar.xz
       - mkdir libcxx-10.0.1.src/build && pushd libcxx-10.0.1.src/build
       - $CMAKE -DLLVM_PATH=../../llvm-10.0.1.src -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../../libcxxabi-10.0.1.src/include -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLLVM_USE_SANITIZER=MemoryWithOrigins -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10 ..
+      - make
       - popd && popd
 
       # Run the build
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DBUILD_TESTS=On -DBUILD_MSAN=On -DLIBCXX_MSAN_PATH=../llvm/libcxx-10.0.1.src/build/lib ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_MSAN=On -DLIBCXX_MSAN_PATH=../llvm/libcxx-10.0.1.src/build/lib ..
       - make
       - make check-msan
