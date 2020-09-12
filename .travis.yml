@@ -144,6 +144,6 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DBUILD_TESTS=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
       - make
       - make check-asan
