@@ -148,7 +148,7 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DBUILD_ASAN=On -DUSE_LIBCXX=On ..
       - make
       - make check-asan
       
@@ -158,7 +158,7 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_UBSAN=On -DUSE_LIBCXX=On ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DBUILD_UBSAN=On -DUSE_LIBCXX=On ..
       - make
       - make check-ubsan
       
@@ -182,6 +182,6 @@ jobs:
       # Run the build
       - mkdir build
       - cd build
-      - CC=clang-10 CXX=clang++-10 $CMAKE -DPARLAY_TEST=On -DBUILD_MSAN=On -DLIBCXX_MSAN_PATH=../llvm/libcxx-10.0.1.src/build/lib ..
+      - CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DBUILD_MSAN=On -DLIBCXX_MSAN_PATH=../llvm/libcxx-10.0.1.src/build/lib ..
       - make
       - make check-msan
