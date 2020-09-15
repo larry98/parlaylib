@@ -4,9 +4,9 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
-  - sanitize
   - test
   - analysis
+  - sanitize
 
 addons:
   apt:
