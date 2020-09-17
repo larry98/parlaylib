@@ -4,6 +4,7 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
+  - exp
   - test
   - analysis
   - sanitize
@@ -79,6 +80,18 @@ jobs:
       - mkdir build
       - cd build
       - CC=gcc-7 CXX=g++-7 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
+      - make
+      - make check
+      
+    # Test that the project builds and tests successfully on OSX with Apple Clang
+    - stage: exp
+      name: check-apple-clang
+      os: osx
+      osx_image: xcode12u
+      script:
+      - mkdir build
+      - cd build
+      - CC=clang CXX=clang++ $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
       - make
       - make check
 
