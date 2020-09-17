@@ -93,7 +93,7 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
+      - cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
       - make
       - make check
 
