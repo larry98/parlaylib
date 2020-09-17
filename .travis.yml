@@ -1,3 +1,5 @@
+os: linux
+dist: bionic
 language: cpp
 env: PARLAY_NUM_THREADS=8
 
@@ -8,37 +10,38 @@ stages:
   - sanitize
   - report
 
-# ***********************************************************
-#                        LINUX JOBS
-# ***********************************************************
+addons:
+  apt:
+    update: true
+    sources:
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
+    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+      key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+    packages:
+    - g++-7
+    - g++-9
+    - clang-10
+    - libomp-10-dev
+    - libtbb-dev
+    - libc++1-10
+    - libc++abi1-10
+    - libc++-10-dev
+    - libc++abi-10-dev
+
+
+before_script:
+  # Install the latest CMake
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+      tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
+      export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
+    else
+      brew update
+      brew install cmake
+    fi
   
 jobs:
-  os: linux
-  dist: bionic
-  addons:
-    apt:
-      update: true
-      sources:
-      - sourceline: 'ppa:ubuntu-toolchain-r/test'
-      - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
-        key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-      packages:
-      - g++-7
-      - g++-9
-      - clang-10
-      - libomp-10-dev
-      - libtbb-dev
-      - libc++1-10
-      - libc++abi1-10
-      - libc++-10-dev
-      - libc++abi-10-dev
-  before_script:
-    # Install the latest CMake
-    - sudo apt remove cmake
-    - wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
-    - tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
-    - export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
-    
   include:
   
     # -------------------------------------------------------------------------
@@ -82,6 +85,18 @@ jobs:
       - mkdir build
       - cd build
       - CC=gcc-7 CXX=g++-7 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
+      - make
+      - make check
+      
+    # Test that the project builds and tests successfully on OSX with Apple Clang
+    - stage: exp
+      name: check-apple-clang
+      os: osx
+      osx_image: xcode12u
+      script:
+      - mkdir build
+      - cd build
+      - CC=clang CXX=clang++ $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
       - make
       - make check
 
@@ -208,31 +223,3 @@ jobs:
       - lcov --remove coverage.info '/usr/*' '*/googletest/*' '*/test/*' --output-file coverage.info
       - lcov --list coverage.info
       - bash <(curl -s https://codecov.io/bash) -f coverage.info
-
-# ***********************************************************
-#                        OSX JOBS
-# ***********************************************************
-
-jobs:
-  os: osx
-  osx_image: xcode12u
-  before_script:
-    # Install the latest CMake
-    - brew update
-    - brew install cmake
-
-  include:
-  
-    # -------------------------------------------------------------------------
-    #                                TEST STAGE
-    # -------------------------------------------------------------------------
-  
-    # Test that the project builds and tests successfully on OSX with Apple Clang
-    - stage: exp
-      name: check-apple-clang
-      script:
-      - mkdir build
-      - cd build
-      - CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
-      - make
-      - make check
