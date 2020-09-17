@@ -36,8 +36,6 @@ before_script:
       wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
       tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
       export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
-    else
-      
     fi
   
 jobs:
