@@ -37,8 +37,7 @@ before_script:
       tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
       export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
     else
-      brew update
-      brew install cmake
+      
     fi
   
 jobs:
@@ -96,7 +95,7 @@ jobs:
       script:
       - mkdir build
       - cd build
-      - cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
+      - $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On -DPARLAY_TEST_CILK=On ..
       - make
       - make check
 
