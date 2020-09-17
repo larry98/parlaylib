@@ -4,7 +4,6 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
-  - exp
   - test
   - analysis
   - sanitize
@@ -86,7 +85,7 @@ jobs:
       - make check
       
     # Test that the project builds and tests successfully on OSX with Apple Clang
-    - stage: exp
+    - stage: test
       name: check-apple-clang
       os: osx
       osx_image: xcode12u
