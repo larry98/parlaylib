@@ -50,20 +50,6 @@ static void par_do3_if(bool do_parallel, Lf left, Mf mid, Rf right) {
 template <class T>
 size_t log2_up(T);
 
-template <class T>
-struct maybe {
-  T value;
-  bool valid;
-
-  maybe(T v, bool u) : value(v) { valid = u; }
-  maybe(T v) : value(v) { valid = true; }
-  maybe() { valid = false; }
-
-  bool operator!() const { return !valid; }
-  operator bool() const { return valid; };
-  T& operator*() { return value; }
-};
-
 struct empty {};
 
 typedef uint32_t flags;

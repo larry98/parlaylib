@@ -13,6 +13,7 @@
 #include <cmath>
 
 #include <atomic>
+#include <optional>
 
 #include "concurrent_stack.h"
 #include "memory_size.h"
@@ -38,7 +39,7 @@ private:
     block_p head;
     block_p mid;
     char cache_line[pad_size];
-    thread_list() : sz(0), head(NULL) {};
+    thread_list() : sz(0), head(nullptr) {};
   };
 
   bool initialized{false};
@@ -69,7 +70,7 @@ public:
 					p->next = reinterpret_cast<block_p>(reinterpret_cast<char*>(p) + block_size_);
     }, 1000, true);
     block_p last =  reinterpret_cast<block_p>(reinterpret_cast<char*>(start) + (list_length-1) * block_size_);
-    last->next = NULL;
+    last->next = nullptr;
     return start;
   }
 
@@ -82,8 +83,8 @@ public:
 
   auto allocate_blocks(size_t num_blocks) -> char* {
     char* start = (char*) ::operator new(num_blocks * block_size_+ pad_size, std::align_val_t{pad_size});
-    //char* start = (char*) parlay::my_alloc(num_blocks * block_size_);
-    if (start == NULL) {
+
+    if (start == nullptr) {
       fprintf(stderr, "Cannot allocate space in block_allocator");
       exit(1); }
 
@@ -100,7 +101,7 @@ public:
   // Either grab a list from the global pool, or if there is none
   // then allocate a new list
   auto get_list() -> block_p {
-    maybe<block_p> rem = global_stack.pop();
+    std::optional<block_p> rem = global_stack.pop();
     if (rem) return *rem;
     block_p start = reinterpret_cast<block_p>(allocate_blocks(list_length));
     return initialize_list(start);
@@ -155,7 +156,7 @@ public:
         local_lists[i].sz = 0;
   
       // throw away all allocated memory
-      maybe<char*> x;
+      std::optional<char*> x;
       while ((x = pool_roots.pop())) ::operator delete(*x, std::align_val_t{pad_size});
       pool_roots.clear();
       global_stack.clear();
@@ -176,7 +177,7 @@ public:
       local_lists[id].mid = local_lists[id].head;
     } else if (local_lists[id].sz == 2*list_length) {
       global_stack.push(local_lists[id].mid->next);
-      local_lists[id].mid->next = NULL;
+      local_lists[id].mid->next = nullptr;
       local_lists[id].sz = list_length;
     }
     new_node->next = local_lists[id].head;

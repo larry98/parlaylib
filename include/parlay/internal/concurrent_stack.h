@@ -15,7 +15,10 @@
 
 #include <cstdint>
 #include <cstdio>
+
+#include <atomic>
 #include <iostream>
+#include <optional>
 
 #include "../utilities.h"
 
@@ -33,16 +36,14 @@ class concurrent_stack {
     struct nodeAndCounter {
       Node* node;
       uint64_t counter;
+      nodeAndCounter() = default;
+      nodeAndCounter(Node* _node, uint64_t _counter) : node(_node), counter(_counter) { }
     };
 
-    union CAS_t {
-      __uint128_t x;
-      nodeAndCounter NC;
-    };
-    CAS_t head;
+    std::atomic<nodeAndCounter> head;
 
     size_t length(Node* n) {
-      if (n == NULL)
+      if (n == nullptr)
         return 0;
       else
         return n->length;
@@ -50,39 +51,38 @@ class concurrent_stack {
 
    public:
     prim_concurrent_stack() {
-      head.NC.node = NULL;
-      head.NC.counter = 0;
-      std::atomic_thread_fence(std::memory_order_seq_cst);
+      head.store(nodeAndCounter(nullptr, 0));
     }
 
-    size_t size() { return length(head.NC.node); }
+    size_t size() { return length(head.load().node); }
 
     void push(Node* newNode) {
-      CAS_t oldHead, newHead;
+      nodeAndCounter oldHead, newHead;
       do {
-        oldHead = head;
-        newNode->next = oldHead.NC.node;
-        newNode->length = length(oldHead.NC.node) + 1;
-        // std::atomic_thread_fence(std::memory_order_release);
-        std::atomic_thread_fence(std::memory_order_seq_cst);
-        newHead.NC.node = newNode;
-        newHead.NC.counter = oldHead.NC.counter + 1;
-      } while (!__sync_bool_compare_and_swap_16(&head.x, oldHead.x, newHead.x));
+        oldHead = head.load();
+        
+        newNode->next = oldHead.node;
+        newNode->length = length(oldHead.node) + 1;
+
+        newHead.node = newNode;
+        newHead.counter = oldHead.counter + 1;
+      } while (!head.compare_exchange_weak(oldHead, newHead));
     }
+    
     Node* pop() {
       Node* result;
-      CAS_t oldHead, newHead;
+      nodeAndCounter oldHead, newHead;
       do {
-        oldHead = head;
-        result = oldHead.NC.node;
-        if (result == NULL) return result;
-        newHead.NC.node = result->next;
-        newHead.NC.counter = oldHead.NC.counter + 1;
-      } while (!__sync_bool_compare_and_swap_16(&head.x, oldHead.x, newHead.x));
+        oldHead = head.load();
+        result = oldHead.node;
+        if (result == nullptr) return result;
+        newHead.node = result->next;
+        newHead.counter = oldHead.counter + 1;
+      } while (!head.compare_exchange_weak(oldHead, newHead));
 
       return result;
     }
-  };  // __attribute__((aligned(16)));
+  };
 
   prim_concurrent_stack a;
   prim_concurrent_stack b;
@@ -92,24 +92,24 @@ class concurrent_stack {
 
   void push(T v) {
     Node* x = b.pop();
-    if (!x) x = (Node*)malloc(sizeof(Node));
+    if (!x) x = (Node*) ::operator new(sizeof(Node));
     x->value = v;
     a.push(x);
   }
 
-  maybe<T> pop() {
+  std::optional<T> pop() {
     Node* x = a.pop();
-    if (!x) return maybe<T>();
+    if (!x) return {};
     T r = x->value;
     b.push(x);
-    return maybe<T>(r);
+    return {r};
   }
 
   // assumes no push or pop in progress
   void clear() {
     Node* x;
-    while ((x = a.pop())) free(x);
-    while ((x = b.pop())) free(x);
+    while ((x = a.pop())) ::operator delete(x);
+    while ((x = b.pop())) ::operator delete(x);
   }
 
   concurrent_stack() {}

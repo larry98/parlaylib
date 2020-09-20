@@ -7,6 +7,7 @@
 #include <atomic>
 #include <iostream>
 #include <new>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -54,7 +55,7 @@ private:
 
     if (n <= max_size) {
       while (n > sizes[bucket]) bucket++;
-      maybe<void*> r = large_buckets[bucket-num_small].pop();
+      std::optional<void*> r = large_buckets[bucket-num_small].pop();
       if (r) return *r;
       alloc_size = sizes[bucket];
     } else alloc_size = n;
@@ -177,7 +178,7 @@ public:
 
   void clear() {
     for (size_t i = num_small; i < num_buckets; i++) {
-      maybe<void*> r = large_buckets[i-num_small].pop();
+      std::optional<void*> r = large_buckets[i-num_small].pop();
       while (r) {
         large_allocated -= sizes[i];
         ::operator delete(*r, std::align_val_t{large_align});
