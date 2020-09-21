@@ -21,7 +21,6 @@
 
 namespace parlay {
 
-
 // ****************************************
 //    pool_allocator
 // ****************************************
@@ -114,6 +113,7 @@ public:
 
     small_allocators = (struct block_allocator*)
       ::operator new(num_buckets * sizeof(struct block_allocator), std::align_val_t{alignof(block_allocator)} );
+
     size_t prev_bucket_size = 0;
   
     for (size_t i = 0; i < num_small; i++) {

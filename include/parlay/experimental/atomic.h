@@ -35,7 +35,7 @@ bool atomic_compare_and_swap_16(T* obj, T expected, T desired) noexcept {
     std::memcpy(&desired_bits, &desired, sizeof(T));
     return _InterlockedCompareExchange128(reinterpret_cast<__int64 volatile*>(obj), desired_bits[1], desired_bits[0], reinterpret_cast<__int64*>(expected_bits));
 #else
-    #error "No support for Double-word CAS"
+    // No 16-byte CAS available
 #endif
 }
 
