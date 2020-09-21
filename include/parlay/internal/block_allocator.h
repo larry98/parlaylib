@@ -85,8 +85,8 @@ public:
     char* start = (char*) ::operator new(num_blocks * block_size_+ pad_size, std::align_val_t{pad_size});
     assert(start != nullptr);
 
-    auto new_blocks_allocated = blocks_allocated.fetch_add(num_blocks);
-    assert(new_blocks_allocated <= max_blocks);
+    blocks_allocated.fetch_add(num_blocks);
+    assert(blocks_allocated.load() <= max_blocks);
 
     pool_roots.push(start); // keep track so can free later
     return start;
