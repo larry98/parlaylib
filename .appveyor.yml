@@ -38,10 +38,18 @@ for:
       only:  
         - job_name: MinGW
     build_script:
-    - mkdir build && cd build
-    - cmake -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER="C:/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/g++.exe" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-    - cmake --build .
-    - cmake --build . --target check
+    - ps: |
+        md build
+        cd build
+        if ($env:generator -eq "MinGW Makefiles") {
+          $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
+          if ($env:cxx_path -ne "") {
+            $env:path += ";$env:cxx_path"
+          }
+        }
+        cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        cmake --build .
+        cmake --build . --target check
 
   -
     matrix:
