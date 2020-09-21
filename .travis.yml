@@ -4,7 +4,6 @@ language: cpp
 env: PARLAY_NUM_THREADS=8
 
 stages:
-  - exp
   - test
   - analysis
   - sanitize
@@ -96,17 +95,6 @@ jobs:
       - cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
       - make
       - make check
-
-    # Test that the project builds and tests successfully on Windows with MSVC
-    - stage: exp
-      name: check-msvc
-      os: windows
-      script:
-      - mkdir build
-      - cd build
-      - cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-      - cmake --build .
-      - cmake --build . --target check
 
     # -------------------------------------------------------------------------
     #                            ANALYSIS STAGE
