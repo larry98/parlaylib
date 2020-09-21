@@ -28,10 +28,12 @@ for:
       only:
         - job_name: Microsoft Visual C++
     build_script:
-    - mkdir build && cd build
-    - cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-    - cmake --build .
-    - cmake --build . --target check
+    - ps: |
+        md build
+        cd build
+        cmake -G $env:generator -A x64 -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        cmake --build .
+        cmake --build . --target check
   
   -
     matrix:
@@ -41,13 +43,9 @@ for:
     - ps: |
         md build
         cd build
-        if ($env:generator -eq "MinGW Makefiles") {
-          $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
-          if ($env:cxx_path -ne "") {
-            $env:path += ";$env:cxx_path"
-          }
-        }
-        cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
+        $env:path += ";$env:cxx_path"
+        cmake -G $env:generator -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
         cmake --build .
         cmake --build . --target check
 

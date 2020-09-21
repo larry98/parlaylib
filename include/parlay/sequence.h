@@ -195,7 +195,7 @@ struct _sequence_base {
       // types, so no destruction is necessary
       if (!is_small()) {
         destroy_all();
-        _data.large.buffer.free_buffer(*this);
+        _data.long_mode.buffer.free_buffer(*this);
       }
       
       _data.flag = 0;
@@ -339,8 +339,8 @@ struct _sequence_base {
       ~_data_impl() { };
       
       union {
-        short_seq small;
-        long_seq large;
+        short_seq short_mode;
+        long_seq long_mode;
       };
       
       uint8_t small_n : 7;
@@ -355,29 +355,29 @@ struct _sequence_base {
     // Return the size of the sequence
     size_t size() const {
       if (is_small()) return _data.small_n;
-      else return _data.large.get_size();
+      else return _data.long_mode.get_size();
     }
 
     // Return the capacity of the sequence
     size_t capacity() const {
-      if (is_small()) return _data.small.capacity();
-      else return _data.large.capacity();
+      if (is_small()) return _data.short_mode.capacity();
+      else return _data.long_mode.capacity();
     }
 
     value_type* data() {
-      if (is_small()) return _data.small.data();
-      else return _data.large.data();
+      if (is_small()) return _data.short_mode.data();
+      else return _data.long_mode.data();
     }
     
     const value_type* data() const {
-      if (is_small()) return _data.small.data();
-      else return _data.large.data();
+      if (is_small()) return _data.short_mode.data();
+      else return _data.long_mode.data();
     }
 
     void set_size(size_t new_size) {
       assert(new_size <= capacity());
       if (is_small()) _data.small_n = new_size;
-      else _data.large.set_size(new_size);
+      else _data.long_mode.set_size(new_size);
     }
     
     // Constructs am object of type value_type at an
@@ -445,13 +445,13 @@ struct _sequence_base {
         
         // Destroy the old stuff
         if (!is_small()) {
-          _data.large.buffer.free_buffer(*this);
+          _data.long_mode.buffer.free_buffer(*this);
         }
         
         // Assign the new stuff
         _data.flag = 1;  // large sequence
-        _data.large.buffer = new_buffer;
-        _data.large.set_size(n);
+        _data.long_mode.buffer = new_buffer;
+        _data.long_mode.set_size(n);
       }
       
       assert(capacity() >= desired);
