@@ -23,28 +23,35 @@ environment:
       
 
 for:
-  - matrix:
+  -
+    matrix:
       only:
         - job_name: Microsoft Visual C++
-          build_script:
-          - mkdir build && cd build
-          - cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-          - cmake --build .
-          - cmake --build . --target check
-          
+    build_script:
+    - mkdir build && cd build
+    - cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+    - cmake --build .
+    - cmake --build . --target check
+  
+  -
+    matrix:
+      only:  
         - job_name: MinGW
-          build_script:
-          - mkdir build && cd build
-          - cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-          - cmake --build .
-          - cmake --build . --target check
-          
+    build_script:
+    - mkdir build && cd build
+    - cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+    - cmake --build .
+    - cmake --build . --target check
+
+  -
+    matrix:
+      only:          
         - job_name: Cygwin
-          install:
-          - ps: 'Start-FileDownload "https://cygwin.com/setup-x86_64.exe" -FileName "setup-x86_64.exe"'
-          - 'setup-x86_64.exe --quiet-mode --no-shortcuts --only-site --root "%CYG_ROOT%" --site "%CYG_MIRROR%" --local-package-dir "%CYG_ROOT%\var\cache\setup" --packages "%CYG_PACKAGES%"'
-          build_script:
-          - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
-          - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
-          - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
-          - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'
+    install:
+    - ps: 'Start-FileDownload "https://cygwin.com/setup-x86_64.exe" -FileName "setup-x86_64.exe"'
+    - 'setup-x86_64.exe --quiet-mode --no-shortcuts --only-site --root "%CYG_ROOT%" --site "%CYG_MIRROR%" --local-package-dir "%CYG_ROOT%\var\cache\setup" --packages "%CYG_PACKAGES%"'
+    build_script:
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'
