@@ -39,7 +39,7 @@ for:
         - job_name: MinGW
     build_script:
     - mkdir build && cd build
-    - cmake -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER="C:\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin\g++.exe" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+    - cmake -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER="C:/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/g++.exe" -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
     - cmake --build .
     - cmake --build . --target check
 

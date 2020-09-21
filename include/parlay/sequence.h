@@ -264,12 +264,12 @@ struct _sequence_base {
     // This requires the GNU C packed struct extension which
     // might not always be available, in which case this object
     // will be 16 bytes, making the entire sequence 24 bytes.
-    struct _long {
+    struct long_seq {
       capacitated_buffer buffer;
       uint64_t n : 48;
       
-      _long() = delete;
-      ~_long() = delete;
+      long_seq() = delete;
+      ~long_seq() = delete;
       
       void set_size(size_t new_size) {
         n = new_size;
@@ -299,11 +299,11 @@ struct _sequence_base {
 
     // A short-size-optimized sequence. Elements are stored
     // inline in the data structure.
-    struct _short {
+    struct short_seq {
       byte_type buffer[15];
       
-      _short() = delete;
-      ~_short() = delete;
+      short_seq() = delete;
+      ~short_seq() = delete;
       
       size_t capacity() const {
         // The following check prevents the use of small-size
@@ -311,7 +311,7 @@ struct _sequence_base {
         // because we want small-size optimized sequences to be
         // trivially copyable/movable.
         if (std::is_trivial<value_type>::value) {
-          return (sizeof(_long) - 1) / sizeof(value_type);
+          return (sizeof(long_seq) - 1) / sizeof(value_type);
         }
         else {
           return 0;
@@ -339,8 +339,8 @@ struct _sequence_base {
       ~_data_impl() { };
       
       union {
-        _short small;
-        _long large;
+        short_seq small;
+        long_seq large;
       };
       
       uint8_t small_n : 7;
