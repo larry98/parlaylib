@@ -20,6 +20,8 @@
 #include <iostream>
 #include <optional>
 
+#include "../experimental/atomic.h"
+
 #include "../utilities.h"
 
 namespace parlay {
@@ -40,7 +42,7 @@ class concurrent_stack {
       nodeAndCounter(Node* _node, uint64_t _counter) : node(_node), counter(_counter) { }
     };
 
-    std::atomic<nodeAndCounter> head;
+    nodeAndCounter head;
 
     size_t length(Node* n) {
       if (n == nullptr)
@@ -50,35 +52,35 @@ class concurrent_stack {
     }
 
    public:
-    prim_concurrent_stack() {
-      head.store(nodeAndCounter(nullptr, 0));
+    prim_concurrent_stack() : head(nullptr, 0) {
+
     }
 
-    size_t size() { return length(head.load().node); }
+    size_t size() { return length(head.node); }
 
     void push(Node* newNode) {
       nodeAndCounter oldHead, newHead;
       do {
-        oldHead = head.load();
+        oldHead = head;
         
         newNode->next = oldHead.node;
         newNode->length = length(oldHead.node) + 1;
 
         newHead.node = newNode;
         newHead.counter = oldHead.counter + 1;
-      } while (!head.compare_exchange_weak(oldHead, newHead));
+      } while (!experimental::atomic_compare_and_swap_16(&head, oldHead, newHead));
     }
     
     Node* pop() {
       Node* result;
       nodeAndCounter oldHead, newHead;
       do {
-        oldHead = head.load();
+        oldHead = head;
         result = oldHead.node;
         if (result == nullptr) return result;
         newHead.node = result->next;
         newHead.counter = oldHead.counter + 1;
-      } while (!head.compare_exchange_weak(oldHead, newHead));
+      } while (!experimental::atomic_compare_and_swap_16(&head, oldHead, newHead));
 
       return result;
     }
