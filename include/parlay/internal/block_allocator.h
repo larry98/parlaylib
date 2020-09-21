@@ -50,7 +50,7 @@ private:
   size_t list_length;
   size_t max_blocks;
   size_t block_size_;
-  size_t blocks_allocated;
+  std::atomic<size_t> blocks_allocated;
   
   block_allocator(const block_allocator&) = delete;
   block_allocator(block_allocator&&) = delete;
@@ -60,7 +60,7 @@ private:
 public:
   const int thread_count;
   size_t block_size () {return block_size_;}
-  size_t num_allocated_blocks() {return blocks_allocated;}
+  size_t num_allocated_blocks() {return blocks_allocated.load();}
 
   // Allocate a new list of list_length elements
 
@@ -78,21 +78,15 @@ public:
     size_t free_blocks = global_stack.size()*list_length;
     for (int i = 0; i < thread_count; ++i) 
       free_blocks += local_lists[i].sz;
-    return blocks_allocated - free_blocks;
+    return blocks_allocated.load() - free_blocks;
   }
 
   auto allocate_blocks(size_t num_blocks) -> char* {
     char* start = (char*) ::operator new(num_blocks * block_size_+ pad_size, std::align_val_t{pad_size});
+    assert(start != nullptr);
 
-    if (start == nullptr) {
-      fprintf(stderr, "Cannot allocate space in block_allocator");
-      exit(1); }
-
-    parlay::fetch_and_add(&blocks_allocated, num_blocks); // atomic
-
-    if (blocks_allocated > max_blocks) {
-      fprintf(stderr, "Too many blocks in block_allocator, change max_blocks");
-      exit(1);  }
+    auto new_blocks_allocated = blocks_allocated.fetch_add(num_blocks);
+    assert(new_blocks_allocated <= max_blocks);
 
     pool_roots.push(start); // keep track so can free later
     return start;
@@ -130,7 +124,7 @@ public:
 		  size_t reserved_blocks = 0, 
 		  size_t list_length_ = 0, 
 		  size_t max_blocks_ = 0) : thread_count(num_workers()) {
-    blocks_allocated = 0;
+    blocks_allocated.store(0);
     block_size_ = block_size;
     if (list_length_ == 0)
       list_length = default_list_bytes / block_size;
@@ -160,7 +154,7 @@ public:
       while ((x = pool_roots.pop())) ::operator delete(*x, std::align_val_t{pad_size});
       pool_roots.clear();
       global_stack.clear();
-      blocks_allocated = 0;
+      blocks_allocated.store(0);
     }
   }
 
