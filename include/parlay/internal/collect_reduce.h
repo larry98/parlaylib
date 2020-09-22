@@ -347,7 +347,7 @@ sequence<typename Seq::value_type> collect_reduce_sparse(Seq const &A,
           throw std::runtime_error("hash table overflow in collect_reduce");
         for (size_t j = start; j < end; j++) {
           size_t idx = B[j].first;
-          size_t k = ((uint)hasheq.hash(B[j])) % table_size;
+          size_t k = ((size_t)hasheq.hash(B[j])) % table_size;
           while (flags[k] && my_table[k].first != idx)
             k = (k + 1 == table_size) ? 0 : k + 1;
           if (flags[k])
