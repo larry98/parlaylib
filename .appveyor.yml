@@ -38,7 +38,7 @@ for:
         cd build
         cmake -G $env:generator -A x64 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=" /bigobj " -DPARLAY_TEST=On ..
         cmake --build .
-        cmake --build . --target check
+        ctest
   
   -
     matrix:
@@ -52,7 +52,7 @@ for:
         $env:path += ";$env:cxx_path"
         cmake -G $env:generator -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
         cmake --build .
-        cmake --build . --target check
+        ctest
 
   -
     matrix:
