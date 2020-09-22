@@ -19,13 +19,13 @@ environment:
       CYG_ROOT: C:\cygwin_parlay
       CYG_BASH: C:\cygwin_parlay\bin\bash
       CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
-      CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake
+      CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang,libiconv-devel,cygwin32-libiconv-1.14-2
     
     - job_name: Cygwin Clang
       CYG_ROOT: C:\cygwin_parlay
       CYG_BASH: C:\cygwin_parlay\bin\bash
       CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
-      CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang,cygwin32-libiconv-1.14-2
+      CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang,libiconv-devel,cygwin32-libiconv-1.14-2
 
 for:
   -
