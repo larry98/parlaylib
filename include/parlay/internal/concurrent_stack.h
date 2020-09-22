@@ -18,6 +18,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <mutex>
 #include <optional>
 
 #include "../experimental/atomic.h"
@@ -34,60 +35,44 @@ class concurrent_stack {
     size_t length;
   };
 
-  class alignas(64) prim_concurrent_stack {
-    struct nodeAndCounter {
-      Node* node;
-      uint64_t counter;
-      nodeAndCounter() = default;
-      nodeAndCounter(Node* _node, uint64_t _counter) : node(_node), counter(_counter) { }
-    };
+  class alignas(64) locking_concurrent_stack {
 
-    nodeAndCounter head;
+    Node* head;
+    std::mutex stack_mutex;
 
     size_t length(Node* n) {
-      if (n == nullptr)
+      if (n == nullptr) {
         return 0;
-      else
+      }
+      else {
         return n->length;
+      }
     }
 
    public:
-    prim_concurrent_stack() : head(nullptr, 0) {
+    locking_concurrent_stack() : head(nullptr) {
 
     }
 
-    size_t size() { return length(head.node); }
+    size_t size() { return length(head); }
 
     void push(Node* newNode) {
-      nodeAndCounter oldHead, newHead;
-      do {
-        oldHead = head;
-        
-        newNode->next = oldHead.node;
-        newNode->length = length(oldHead.node) + 1;
-
-        newHead.node = newNode;
-        newHead.counter = oldHead.counter + 1;
-      } while (!experimental::atomic_compare_and_swap_16(&head, oldHead, newHead));
+      std::lock_guard<std::mutex> lock(stack_mutex);
+      newNode->next = head;
+      newNode->length  = length(head) + 1;
+      head = newNode;
     }
     
     Node* pop() {
-      Node* result;
-      nodeAndCounter oldHead, newHead;
-      do {
-        oldHead = head;
-        result = oldHead.node;
-        if (result == nullptr) return result;
-        newHead.node = result->next;
-        newHead.counter = oldHead.counter + 1;
-      } while (!experimental::atomic_compare_and_swap_16(&head, oldHead, newHead));
-
+      std::lock_guard<std::mutex> lock(stack_mutex);
+      Node* result = head;
+      if (head != nullptr) head = head->next;
       return result;
     }
   };
 
-  prim_concurrent_stack a;
-  prim_concurrent_stack b;
+  locking_concurrent_stack a;
+  locking_concurrent_stack b;
 
  public:
   size_t size() { return a.size(); }
