@@ -21,8 +21,6 @@
 #include <mutex>
 #include <optional>
 
-#include "../experimental/atomic.h"
-
 #include "../utilities.h"
 
 namespace parlay {
