@@ -4,6 +4,10 @@ platform: x64
 
 environment:
   matrix:
+    - job_name: WSL GCC
+    
+    - job_name: WSL Clang
+  
     - job_name: Microsoft Visual C++
       compiler: msvc-16-seh
       generator: "Visual Studio 16 2019"
@@ -27,9 +31,6 @@ environment:
       CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
       CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang,libiconv-devel,cygwin32-libiconv-1.14-2
 
-    - job_name: WSL GCC
-    
-    - job_name: WSL Clang
 
 for:
   -
@@ -90,18 +91,17 @@ for:
         - job_name: WSL GCC
     install:
     - ps: |
-        wsl
-        wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
-        tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
-        export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
+        wsl sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        wsl sudo apt-get -qq update
+        wsl sudo apt install gcc-9 g++-9
+        wsl wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+        wsl tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
     build_script:
     - ps: |
-        wsl
-        mkdir build
-        cd build
-        CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-        make
-        ctest -C Debug --no-tests=error
+        wsl mkdir build
+        wsl cd build && CC=gcc-9 CXX=g++-9 ../cmake-3.18.2-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        wsl cd build && make
+        wsl cd build && ../cmake-3.18.2-Linux-x86_64/bin/ctest -C Debug --no-tests=error
         
   -
     matrix:
@@ -109,20 +109,16 @@ for:
         - job_name: WSL Clang
     install:
     - ps: |
-        wsl
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main
-        sudo apt-get -qq update
-        sudo apt install gcc-9 g++-9 clang-10
-        wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
-        tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
-        export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
+        wsl sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        wsl wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        wsl sudo add-apt-repository deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main
+        wsl sudo apt-get -qq update
+        wsl sudo apt install gcc-9 g++-9 clang-10
+        wsl wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+        wsl tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
     build_script:
     - ps: |
-        wsl
-        mkdir build
-        cd build
-        CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
-        make
-        ctest -C Debug --no-tests=error
+        wsl mkdir build
+        wsl cd build && CC=clang-10 CXX=clang++-10 ../cmake-3.18.2-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        wsl cd build && make
+        wsl cd build && ../cmake-3.18.2-Linux-x86_64/bin/ctest -C Debug --no-tests=error
