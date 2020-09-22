@@ -22,6 +22,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace parlay {
 
@@ -188,9 +189,9 @@ class delayed_sequence {
     
   // Default copy & move, constructor and assignment
   delayed_sequence(const delayed_sequence<T, F>&) = default;
-  delayed_sequence(delayed_sequence<T, F>&&) noexcept = default;
+  delayed_sequence(delayed_sequence<T, F>&&) noexcept(std::is_nothrow_move_constructible_v<F>) = default;
   delayed_sequence<T, F>& operator=(const delayed_sequence<T, F>&) = default;
-  delayed_sequence<T, F>& operator=(delayed_sequence<T, F>&&) noexcept = default;
+  delayed_sequence<T, F>& operator=(delayed_sequence<T, F>&&) noexcept(std::is_nothrow_move_assignable_v<F>) = default;
 
   // ---------------- Iterator Pairs --------------------
 
