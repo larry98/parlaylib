@@ -40,7 +40,7 @@ for:
         cmake --build .
         cd test
         ls
-        ctest
+        ctest -C Debug
   
   -
     matrix:
