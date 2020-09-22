@@ -93,7 +93,7 @@ for:
     - ps: |
         wsl sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         wsl sudo apt-get -qq update
-        wsl sudo apt install gcc-9 g++-9
+        wsl sudo apt-get -y install gcc-9 g++-9
         wsl wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
         wsl tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
     build_script:
@@ -113,7 +113,7 @@ for:
         wsl wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         wsl sudo add-apt-repository deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main -y
         wsl sudo apt-get -qq update
-        wsl sudo apt install gcc-9 g++-9 clang-10
+        wsl sudo apt-get -y install gcc-9 g++-9 clang-10
         wsl wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
         wsl tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
     build_script:
