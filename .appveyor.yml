@@ -27,6 +27,10 @@ environment:
       CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
       CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang,libiconv-devel,cygwin32-libiconv-1.14-2
 
+    - job_name: WSL GCC
+    
+    - job_name: WSL Clang
+
 for:
   -
     matrix:
@@ -38,9 +42,7 @@ for:
         cd build
         cmake -G $env:generator -A x64 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=" /bigobj " -DPARLAY_TEST=On ..
         cmake --build .
-        cd test
-        ls
-        ctest -C Debug
+        ctest -C Debug --no-tests=error
   
   -
     matrix:
@@ -54,7 +56,7 @@ for:
         $env:path += ";$env:cxx_path"
         cmake -G $env:generator -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
         cmake --build .
-        ctest
+        ctest -C Debug --no-tests=error
 
   -
     matrix:
@@ -67,7 +69,7 @@ for:
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; CXX=g++ cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
-    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; ctest -C Debug --no-tests=error"'
 
   -
     matrix:
@@ -80,4 +82,50 @@ for:
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
-    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; ctest -C Debug --no-tests=error"'
+    
+  -
+    matrix:
+      only:          
+        - job_name: WSL GCC
+    install:
+    - ps: |
+        wsl
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get -qq update
+        sudo apt install gcc-9 g++-9
+        wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+        tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
+        export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
+    build_script:
+    - ps: |
+        wsl
+        mkdir build
+        cd build
+        CC=gcc-9 CXX=g++-9 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        make
+        ctest -C Debug --no-tests=error
+        
+  -
+    matrix:
+      only:          
+        - job_name: WSL Clang
+    install:
+    - ps: |
+        wsl
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        wget --quiet -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main
+        sudo apt-get -qq update
+        sudo apt install gcc-9 g++-9 clang-10
+        wget --quiet https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.tar.gz
+        tar -xf cmake-3.18.2-Linux-x86_64.tar.gz
+        export CMAKE=$PWD/cmake-3.18.2-Linux-x86_64/bin/cmake
+    build_script:
+    - ps: |
+        wsl
+        mkdir build
+        cd build
+        CC=clang-10 CXX=clang++-10 $CMAKE -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        make
+        ctest -C Debug --no-tests=error
