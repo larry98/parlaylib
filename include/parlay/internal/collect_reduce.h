@@ -71,11 +71,11 @@ auto collect_reduce_few(Seq const &A, Key const &get_key,
   size_t n = A.size();
 
   // pad to 16 buckets to avoid false sharing (does not affect results)
-  num_buckets = std::max(num_buckets, (size_t)16);
+  num_buckets = (std::max)(num_buckets, (size_t)16);
 
   // size_t num_blocks = ceil(pow(n/num_buckets,0.5));
   size_t num_threads = num_workers();
-  size_t num_blocks = std::min(4 * num_threads, n / num_buckets / 64);
+  size_t num_blocks = (std::min)(4 * num_threads, n / num_buckets / 64);
 
   num_blocks = 1 << log2_up(num_blocks);
 

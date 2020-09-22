@@ -15,12 +15,17 @@ environment:
       generator: "MinGW Makefiles"
       cxx_path: 'C:\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin'
 
-    - job_name: Cygwin
+    - job_name: Cygwin GCC
       CYG_ROOT: C:\cygwin_parlay
       CYG_BASH: C:\cygwin_parlay\bin\bash
       CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
       CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake
-      
+    
+    - job_name: Cygwin Clang
+      CYG_ROOT: C:\cygwin_parlay
+      CYG_BASH: C:\cygwin_parlay\bin\bash
+      CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
+      CYG_PACKAGES: git,make,gcc-core,gcc-g++,cmake,clang
 
 for:
   -
@@ -31,7 +36,7 @@ for:
     - ps: |
         md build
         cd build
-        cmake -G $env:generator -A x64 -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On ..
+        cmake -G $env:generator -A x64 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=" /bigobj " -DPARLAY_TEST=On ..
         cmake --build .
         cmake --build . --target check
   
@@ -52,12 +57,25 @@ for:
   -
     matrix:
       only:          
-        - job_name: Cygwin
+        - job_name: Cygwin GCC
     install:
     - ps: 'Start-FileDownload "https://cygwin.com/setup-x86_64.exe" -FileName "setup-x86_64.exe"'
     - 'setup-x86_64.exe --quiet-mode --no-shortcuts --only-site --root "%CYG_ROOT%" --site "%CYG_MIRROR%" --local-package-dir "%CYG_ROOT%\var\cache\setup" --packages "%CYG_PACKAGES%"'
     build_script:
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
-    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; CXX=g++ cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'
+
+  -
+    matrix:
+      only:          
+        - job_name: Cygwin Clang
+    install:
+    - ps: 'Start-FileDownload "https://cygwin.com/setup-x86_64.exe" -FileName "setup-x86_64.exe"'
+    - 'setup-x86_64.exe --quiet-mode --no-shortcuts --only-site --root "%CYG_ROOT%" --site "%CYG_MIRROR%" --local-package-dir "%CYG_ROOT%\var\cache\setup" --packages "%CYG_PACKAGES%"'
+    build_script:
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; mkdir build"'
+    - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Debug -DPARLAY_TEST=On .."'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"'
     - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER/build; make test"'

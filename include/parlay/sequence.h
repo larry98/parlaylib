@@ -429,7 +429,7 @@ struct _sequence_base {
       if (current < desired) {
         // Allocate a new buffer that is at least
         // 50% larger than the old capacity
-        size_t new_capacity = std::max(desired,
+        size_t new_capacity = (std::max)(desired,
           (15 * current + 9) / 10);
         capacitated_buffer new_buffer(new_capacity, *this);
         
@@ -1087,14 +1087,14 @@ class sequence : protected _sequence_base<T, Allocator> {
     auto n = size();
     auto self = begin();
     size_t i;
-    for (i = 0; i < std::min(granularity, n); i++)
+    for (i = 0; i < (std::min)(granularity, n); i++)
       if (!(self[i] == other[i])) return false;
     if (i == n) return true;
     size_t start = granularity;
     size_t block_size = 2 * granularity;
     bool matches = true;
     while (start < n) {
-      size_t last = std::min(n, start + block_size);
+      size_t last = (std::min)(n, start + block_size);
       parallel_for(start, last, [&](size_t j) {
         if (!(self[j] == other[j])) matches = false;
       }, granularity);
