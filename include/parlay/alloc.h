@@ -19,6 +19,10 @@
 #include "internal/memory_size.h"
 #include "internal/block_allocator.h"
 
+#ifdef DECHECK
+#include <decheck/alloc.h>
+#endif
+
 namespace parlay {
 
 // ****************************************
@@ -226,9 +230,16 @@ template <typename T>
 struct allocator {
   using value_type = T;
   T* allocate(size_t n) {
-    return (T*) internal::get_default_allocator().allocate(n * sizeof(T));
+    T *ptr = internal::get_default_allocator().allocate(n * sizeof(T));
+#ifdef DECHECK
+    decheck::internal::decheck_alloc(ptr);
+#endif
+    return ptr;
   }
   void deallocate(T* ptr, size_t n) {
+#ifdef DECHECK
+    decheck::internal::decheck_dealloc(ptr);
+#endif
     internal::get_default_allocator().deallocate((void*) ptr, n * sizeof(T));
   }
 
@@ -256,8 +267,21 @@ public:
   static constexpr size_t default_alloc_size = 0;
   static block_allocator allocator;
   static const bool initialized{true};
-  static T* alloc() { return (T*) allocator.alloc();}
-  static void free(T* ptr) {allocator.free((void*) ptr);}
+
+  static T* alloc() { 
+    T *ptr = (T *) allocator.alloc();
+#ifdef DECHECK
+    decheck::internal::decheck_alloc(ptr);
+#endif
+    return ptr;
+  }
+
+  static void free(T* ptr) {
+#ifdef DECHECK
+    decheck::internal::decheck_dealloc(ptr);
+#endif
+    allocator.free((void*) ptr);
+  }
 
   // for backward compatibility
   //static void init(size_t _alloc_size = 0, size_t _list_size=0) {};
