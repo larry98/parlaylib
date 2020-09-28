@@ -38,6 +38,10 @@
 
 #include "internal/work_stealing_job.h"
 
+#ifdef DECHECK
+#include <decheck/par.h>
+#endif
+
 namespace parlay {
 
 // Deque from Arora, Blumofe, and Plaxton (SPAA, 1998).
@@ -281,6 +285,24 @@ class fork_join_scheduler {
   // Fork two thunks and wait until they both finish.
   template <typename L, typename R>
   void pardo(L left, R right, bool conservative = false) {
+#ifdef DECHECK
+    decheck::internal::decheck_state_t left_state, right_state;
+    decheck::internal::decheck_fork(&left_state, &right_state);
+    decheck::internal::decheck_reset(nullptr);
+    auto checked_right = [&] () {
+      decheck::internal::run_child(right, &right_state);
+    };
+    auto right_job = make_job(checked_right);
+    sched->spawn(&right_job);
+    decheck::internal::run_child(left, &left_state);
+    if (sched->try_pop() != nullptr)
+      checked_right();
+    else {
+      auto finished = [&]() { return right_job.finished(); };
+      sched->wait(finished, conservative);
+    }
+    decheck::internal::decheck_join(&left_state, &right_state);
+#else
     auto right_job = make_job(right);
     sched->spawn(&right_job);
     left();
@@ -290,6 +312,7 @@ class fork_join_scheduler {
       auto finished = [&]() { return right_job.finished(); };
       sched->wait(finished, conservative);
     }
+#endif
   }
 
   template <typename F>
